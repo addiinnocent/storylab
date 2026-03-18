@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+storylab.sublime-project
+storylab.sublime-workspace

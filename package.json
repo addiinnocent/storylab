@@ -1,7 +1,7 @@
 {
   "name": "storylab",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.12",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,9 +17,20 @@
     "test:e2e": "wdio run test/e2e/wdio.conf.ts"
   },
   "dependencies": {
+    "@lexical/code": "^0.41.0",
+    "@lexical/history": "^0.41.0",
+    "@lexical/link": "^0.41.0",
+    "@lexical/list": "^0.41.0",
+    "@lexical/react": "^0.41.0",
+    "@lexical/rich-text": "^0.41.0",
+    "@lexical/selection": "^0.41.0",
+    "@lexical/table": "^0.41.0",
+    "@lexical/utils": "^0.41.0",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
     "fastify": "^5.8.2",
+    "lexical": "^0.41.0",
+    "lucide-react": "^0.577.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

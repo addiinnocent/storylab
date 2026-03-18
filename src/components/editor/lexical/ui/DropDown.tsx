@@ -16,6 +16,7 @@ import {
 } from 'react';
 import * as React from 'react';
 import {createPortal} from 'react-dom';
+import { ChevronDown } from 'lucide-react';
 
 type DropDownContextType = {
   registerItem: (ref: React.RefObject<HTMLButtonElement>) => void;
@@ -139,6 +140,7 @@ export default function DropDown({
   buttonAriaLabel,
   buttonClassName,
   buttonIconClassName,
+  buttonIcon,
   children,
   stopCloseOnClickSelf,
 }: {
@@ -146,6 +148,7 @@ export default function DropDown({
   buttonAriaLabel?: string;
   buttonClassName: string;
   buttonIconClassName?: string;
+  buttonIcon?: React.ReactNode;
   buttonLabel?: string;
   children: ReactNode;
   stopCloseOnClickSelf?: boolean;
@@ -208,11 +211,15 @@ export default function DropDown({
         className={buttonClassName}
         onClick={() => setShowDropDown(!showDropDown)}
         ref={buttonRef}>
-        {buttonIconClassName && <span className={buttonIconClassName} />}
+        {buttonIcon ? (
+          buttonIcon
+        ) : buttonIconClassName ? (
+          <span className={buttonIconClassName} />
+        ) : null}
         {buttonLabel && (
           <span className="text dropdown-button-text">{buttonLabel}</span>
         )}
-        <i className="chevron-down" />
+        <ChevronDown size={16} />
       </button>
 
       {showDropDown &&

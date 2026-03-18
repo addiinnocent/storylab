@@ -1,25 +1,94 @@
-export default function EditorToolbar() {
+import { useState } from 'react';
+import { Save, Download } from 'lucide-react';
+import './EditorToolbar.css';
+
+interface EditorToolbarProps {
+  chapterId?: string;
+  chapterTitle?: string;
+  onSave?: () => void;
+  onExport?: (format: 'markdown' | 'html' | 'pdf') => void;
+  isSaving?: boolean;
+  wordCount?: number;
+}
+
+export default function EditorToolbar({
+  chapterId,
+  chapterTitle = 'Untitled',
+  onSave,
+  onExport,
+  isSaving = false,
+  wordCount = 0,
+}: EditorToolbarProps) {
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 12px', borderBottom: '1px solid #e5e5e5' }}>
-      <button aria-label="Bold" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-        <strong>B</strong>
-      </button>
-      <button aria-label="Italic" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-        <em>I</em>
-      </button>
-      <button aria-label="Underline" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-        <u>U</u>
-      </button>
-      <button aria-label="Strikethrough" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-        <s>S</s>
-      </button>
-      <div style={{ width: '1px', height: '20px', background: '#e5e5e5', margin: '0 4px' }} />
-      <button aria-label="Heading 1" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-        H1
-      </button>
-      <button aria-label="Heading 2" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-        H2
-      </button>
+    <div className="editor-toolbar">
+      <div className="toolbar-section toolbar-left">
+        <div className="chapter-info">
+          <h2 className="chapter-title">{chapterTitle}</h2>
+          {chapterId && <span className="chapter-id">Chapter {chapterId}</span>}
+        </div>
+      </div>
+
+      <div className="toolbar-section toolbar-center">
+        <div className="word-count-display">
+          {wordCount.toLocaleString()} words
+        </div>
+      </div>
+
+      <div className="toolbar-section toolbar-right">
+        <div className="export-menu-container">
+          <button
+            className="toolbar-button toolbar-button-secondary"
+            onClick={() => setExportMenuOpen(!exportMenuOpen)}
+            aria-label="Export document"
+          >
+            <Download size={18} />
+            Export
+          </button>
+          {exportMenuOpen && (
+            <div className="export-menu">
+              <button
+                className="export-menu-item"
+                onClick={() => {
+                  onExport?.('markdown');
+                  setExportMenuOpen(false);
+                }}
+              >
+                Markdown
+              </button>
+              <button
+                className="export-menu-item"
+                onClick={() => {
+                  onExport?.('html');
+                  setExportMenuOpen(false);
+                }}
+              >
+                HTML
+              </button>
+              <button
+                className="export-menu-item"
+                onClick={() => {
+                  onExport?.('pdf');
+                  setExportMenuOpen(false);
+                }}
+              >
+                PDF (coming soon)
+              </button>
+            </div>
+          )}
+        </div>
+
+        <button
+          className={`toolbar-button toolbar-button-primary ${isSaving ? 'saving' : ''}`}
+          onClick={onSave}
+          disabled={isSaving}
+          aria-label="Save document"
+        >
+          <Save size={18} />
+          {isSaving ? 'Saving...' : 'Save'}
+        </button>
+      </div>
     </div>
-  )
+  );
 }

@@ -24,10 +24,7 @@ import {
   ListNode,
   REMOVE_LIST_COMMAND,
 } from '@lexical/list';
-import {INSERT_EMBED_COMMAND} from '@lexical/react/LexicalAutoEmbedPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {$isDecoratorBlockNode} from '@lexical/react/LexicalDecoratorBlockNode';
-import {INSERT_HORIZONTAL_RULE_COMMAND} from '@lexical/react/LexicalHorizontalRuleNode';
 import {
   $createHeadingNode,
   $createQuoteNode,
@@ -41,7 +38,7 @@ import {
   $patchStyleText,
   $setBlocksType,
 } from '@lexical/selection';
-import {$isTableNode} from '@lexical/table';
+import {$isTableNode, $isTableSelection} from '@lexical/table';
 import {
   $findMatchingParent,
   $getNearestBlockElementAncestorOrThrow,
@@ -51,7 +48,6 @@ import {
 import {
   $createParagraphNode,
   $getNodeByKey,
-  $getRoot,
   $getSelection,
   $isRangeSelection,
   $isRootOrShadowRoot,
@@ -59,7 +55,6 @@ import {
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
-  DEPRECATED_$isGridSelection,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   INDENT_CONTENT_COMMAND,
@@ -68,11 +63,14 @@ import {
   SELECTION_CHANGE_COMMAND,
   UNDO_COMMAND,
 } from 'lexical';
-import { DOWNLOAD_COMMAND } from '../../commands'
 import React, {useCallback, useEffect, useState} from 'react';
-import { isPlatform } from '@ionic/react';
-import { pdf, usePDF } from '@react-pdf/renderer'
-//import {IS_APPLE} from 'shared/environment';
+import {
+  Undo2, Redo2, Type, Heading1, Heading2, Heading3,
+  List, ListOrdered, CheckSquare, Quote, Code, Code2,
+  Bold, Italic, Underline, Link, Strikethrough, Subscript,
+  Superscript, AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  Indent, Outdent, MoreHorizontal, RotateCcw, Table2, Palette, Highlighter
+} from 'lucide-react';
 
 import useModal from '../../hooks/useModal';
 import DropDown, {DropDownItem} from '../../ui/DropDown';
@@ -124,7 +122,8 @@ function getCodeLanguageOptions(): [string, string][] {
 }
 
 const CODE_LANGUAGE_OPTIONS = getCodeLanguageOptions();
-const IS_APPLE = false;
+const IS_APPLE = typeof navigator !== 'undefined' &&
+  /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
 const FONT_FAMILY_OPTIONS: [string, string][] = [
   ['Arial', 'Arial'],
@@ -170,7 +169,7 @@ function BlockFormatDropDown({
       const selection = $getSelection();
       if (
         $isRangeSelection(selection) ||
-        DEPRECATED_$isGridSelection(selection)
+        $isTableSelection(selection)
       ) {
         $setBlocksType(selection, () => $createParagraphNode());
       }
@@ -183,7 +182,7 @@ function BlockFormatDropDown({
         const selection = $getSelection();
         if (
           $isRangeSelection(selection) ||
-          DEPRECATED_$isGridSelection(selection)
+          $isTableSelection(selection)
         ) {
           $setBlocksType(selection, () => $createHeadingNode(headingSize));
         }
@@ -221,7 +220,7 @@ function BlockFormatDropDown({
         const selection = $getSelection();
         if (
           $isRangeSelection(selection) ||
-          DEPRECATED_$isGridSelection(selection)
+          $isTableSelection(selection)
         ) {
           $setBlocksType(selection, () => $createQuoteNode());
         }
@@ -236,7 +235,7 @@ function BlockFormatDropDown({
 
         if (
           $isRangeSelection(selection) ||
-          DEPRECATED_$isGridSelection(selection)
+          $isTableSelection(selection)
         ) {
           if (selection.isCollapsed()) {
             $setBlocksType(selection, () => $createCodeNode());
@@ -253,65 +252,79 @@ function BlockFormatDropDown({
     }
   };
 
+  const getBlockIcon = () => {
+    switch(blockType) {
+      case 'h1': return <Heading1 size={18} />;
+      case 'h2': return <Heading2 size={18} />;
+      case 'h3': return <Heading3 size={18} />;
+      case 'bullet': return <List size={18} />;
+      case 'number': return <ListOrdered size={18} />;
+      case 'check': return <CheckSquare size={18} />;
+      case 'quote': return <Quote size={18} />;
+      case 'code': return <Code size={18} />;
+      default: return <Type size={18} />;
+    }
+  };
+
   return (
     <DropDown
       disabled={disabled}
       buttonClassName="toolbar-item block-controls"
-      buttonIconClassName={'icon block-type ' + blockType}
+      buttonIcon={getBlockIcon()}
       buttonLabel={blockTypeToBlockName[blockType]}
       buttonAriaLabel="Formatting options for text style">
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'paragraph')}
         onClick={formatParagraph}>
-        <i className="icon paragraph" />
+        <Type size={16} />
         <span className="text">Normal</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'h1')}
         onClick={() => formatHeading('h1')}>
-        <i className="icon h1" />
+        <Heading1 size={16} />
         <span className="text">Heading 1</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'h2')}
         onClick={() => formatHeading('h2')}>
-        <i className="icon h2" />
+        <Heading2 size={16} />
         <span className="text">Heading 2</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'h3')}
         onClick={() => formatHeading('h3')}>
-        <i className="icon h3" />
+        <Heading3 size={16} />
         <span className="text">Heading 3</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'bullet')}
         onClick={formatBulletList}>
-        <i className="icon bullet-list" />
+        <List size={16} />
         <span className="text">Bullet List</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'number')}
         onClick={formatNumberedList}>
-        <i className="icon numbered-list" />
+        <ListOrdered size={16} />
         <span className="text">Numbered List</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'check')}
         onClick={formatCheckList}>
-        <i className="icon check-list" />
+        <CheckSquare size={16} />
         <span className="text">Check List</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'quote')}
         onClick={formatQuote}>
-        <i className="icon quote" />
+        <Quote size={16} />
         <span className="text">Quote</span>
       </DropDownItem>
       <DropDownItem
         className={'item ' + dropDownActiveClass(blockType === 'code')}
         onClick={formatCode}>
-        <i className="icon code" />
+        <Code size={16} />
         <span className="text">Code Block</span>
       </DropDownItem>
     </DropDown>
@@ -377,7 +390,7 @@ function FontDropDown({
   );
 }
 
-export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
+export default function ToolbarPlugin(): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const [activeEditor, setActiveEditor] = useState(editor);
   const [blockType, setBlockType] =
@@ -639,7 +652,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
         type="button"
         className="toolbar-item spaced"
         aria-label="Undo">
-        <i className="format undo" />
+        <Undo2 size={18} />
       </button>
       <button
         disabled={!canRedo || !isEditable}
@@ -650,7 +663,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
         type="button"
         className="toolbar-item"
         aria-label="Redo">
-        <i className="format redo" />
+        <Redo2 size={18} />
       </button>
       <Divider />
       {blockType in blockTypeToBlockName && activeEditor === editor && (
@@ -709,7 +722,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             aria-label={`Format text as bold. Shortcut: ${
               IS_APPLE ? '⌘B' : 'Ctrl+B'
             }`}>
-            <i className="format bold" />
+            <Bold size={18} />
           </button>
           <button
             disabled={!isEditable}
@@ -722,7 +735,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             aria-label={`Format text as italics. Shortcut: ${
               IS_APPLE ? '⌘I' : 'Ctrl+I'
             }`}>
-            <i className="format italic" />
+            <Italic size={18} />
           </button>
           <button
             disabled={!isEditable}
@@ -735,7 +748,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             aria-label={`Format text to underlined. Shortcut: ${
               IS_APPLE ? '⌘U' : 'Ctrl+U'
             }`}>
-            <i className="format underline" />
+            <Underline size={18} />
           </button>
           <button
             disabled={!isEditable}
@@ -746,7 +759,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             title="Insert code block"
             type="button"
             aria-label="Insert code block">
-            <i className="format code" />
+            <Code2 size={18} />
           </button>
           <button
             disabled={!isEditable}
@@ -755,32 +768,32 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             aria-label="Insert link"
             title="Insert link"
             type="button">
-            <i className="format link" />
+            <Link size={18} />
           </button>
           <DropdownColorPicker
             disabled={!isEditable}
             buttonClassName="toolbar-item color-picker"
-            buttonAriaLabel="Formatting text color"
-            buttonIconClassName="icon font-color"
+            buttonAriaLabel="Formatting text colour"
+            buttonIcon={<Palette size={18} />}
             color={fontColor}
             onChange={onFontColorSelect}
-            title="text color"
+            title="text colour"
           />
           <DropdownColorPicker
             disabled={!isEditable}
             buttonClassName="toolbar-item color-picker"
-            buttonAriaLabel="Formatting background color"
-            buttonIconClassName="icon bg-color"
+            buttonAriaLabel="Formatting background colour"
+            buttonIcon={<Highlighter size={18} />}
             color={bgColor}
             onChange={onBgColorSelect}
-            title="bg color"
+            title="bg colour"
           />
           <DropDown
             disabled={!isEditable}
             buttonClassName="toolbar-item spaced"
             buttonLabel=""
             buttonAriaLabel="Formatting options for additional text styles"
-            buttonIconClassName="icon dropdown-more">
+            buttonIcon={<MoreHorizontal size={18} />}>
             <DropDownItem
               onClick={() => {
                 activeEditor.dispatchCommand(
@@ -791,7 +804,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
               className={'item ' + dropDownActiveClass(isStrikethrough)}
               title="Strikethrough"
               aria-label="Format text with a strikethrough">
-              <i className="icon strikethrough" />
+              <Strikethrough size={16} />
               <span className="text">Strikethrough</span>
             </DropDownItem>
             <DropDownItem
@@ -801,7 +814,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
               className={'item ' + dropDownActiveClass(isSubscript)}
               title="Subscript"
               aria-label="Format text with a subscript">
-              <i className="icon subscript" />
+              <Subscript size={16} />
               <span className="text">Subscript</span>
             </DropDownItem>
             <DropDownItem
@@ -814,7 +827,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
               className={'item ' + dropDownActiveClass(isSuperscript)}
               title="Superscript"
               aria-label="Format text with a superscript">
-              <i className="icon superscript" />
+              <Superscript size={16} />
               <span className="text">Superscript</span>
             </DropDownItem>
             <DropDownItem
@@ -822,7 +835,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
               className="item"
               title="Clear text formatting"
               aria-label="Clear all text formatting">
-              <i className="icon clear" />
+              <RotateCcw size={16} />
               <span className="text">Clear Formatting</span>
             </DropDownItem>
           </DropDown>
@@ -834,7 +847,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
                 buttonClassName="toolbar-item spaced"
                 buttonLabel="Table"
                 buttonAriaLabel="Open table toolkit"
-                buttonIconClassName="icon table secondary">
+                buttonIcon={<Table2 size={18} />}>
                 <DropDownItem
                   onClick={() => {
                     /**/
@@ -882,7 +895,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
       <DropDown
         disabled={!isEditable}
         buttonLabel="Align"
-        buttonIconClassName="icon left-align"
+        buttonIcon={<AlignLeft size={18} />}
         buttonClassName="toolbar-item spaced alignment"
         buttonAriaLabel="Formatting options for text alignment">
         <DropDownItem
@@ -890,7 +903,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             activeEditor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
           }}
           className="item">
-          <i className="icon left-align" />
+          <AlignLeft size={16} />
           <span className="text">Left Align</span>
         </DropDownItem>
         <DropDownItem
@@ -898,15 +911,15 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             activeEditor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
           }}
           className="item">
-          <i className="icon center-align" />
-          <span className="text">Center Align</span>
+          <AlignCenter size={16} />
+          <span className="text">Centre Align</span>
         </DropDownItem>
         <DropDownItem
           onClick={() => {
             activeEditor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
           }}
           className="item">
-          <i className="icon right-align" />
+          <AlignRight size={16} />
           <span className="text">Right Align</span>
         </DropDownItem>
         <DropDownItem
@@ -914,7 +927,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             activeEditor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
           }}
           className="item">
-          <i className="icon justify-align" />
+          <AlignJustify size={16} />
           <span className="text">Justify Align</span>
         </DropDownItem>
         <Divider />
@@ -923,7 +936,7 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             activeEditor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
           }}
           className="item">
-          <i className={'icon ' + (isRTL ? 'indent' : 'outdent')} />
+          {isRTL ? <Indent size={16} /> : <Outdent size={16} />}
           <span className="text">Outdent</span>
         </DropDownItem>
         <DropDownItem
@@ -931,36 +944,12 @@ export default function ToolbarPlugin({ doc } : { doc: any }): JSX.Element {
             activeEditor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined);
           }}
           className="item">
-          <i className={'icon ' + (isRTL ? 'outdent' : 'indent')} />
+          {isRTL ? <Outdent size={16} /> : <Indent size={16} />}
           <span className="text">Indent</span>
         </DropDownItem>
       </DropDown>
-      {isPlatform('desktop') && (
-        <>
-          <Divider />
-          <DropDown
-            disabled={!isEditable}
-            buttonLabel="Download"
-            buttonIconClassName="icon document-download"
-            buttonClassName="toolbar-item spaced alignment"
-            buttonAriaLabel="Download document as file">
-            <DropDownItem
-              onClick={() => {
-                activeEditor.dispatchCommand(DOWNLOAD_COMMAND, async(file) => {
-                  const blob = await pdf(file).toBlob();
-                  const link = document.createElement('a');
-                  link.href = window.URL.createObjectURL(blob);
-                  link.download = `${doc.title}.pdf`;
-                  link.click();
-                });
-              }}
-              className="item">
-              <i className="icon file-pdf" />
-              <span className="text">PDF</span>
-            </DropDownItem>
-          </DropDown>
-        </>
-      )}
+      {/* Download feature deferred - requires @react-pdf/renderer installation */}
+      {/* TODO: Re-enable after PDF export is implemented */}
       {modal}
     </div>
   );

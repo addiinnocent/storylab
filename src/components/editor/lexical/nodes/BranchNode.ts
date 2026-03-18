@@ -1,4 +1,4 @@
-import { TextNode, NodeKey, SerializedElementNode, EditorConfig } from 'lexical';
+import { TextNode, NodeKey, EditorConfig, SerializedTextNode } from 'lexical';
 import { $applyNodeReplacement } from 'lexical';
 
 export class BranchNode extends TextNode {
@@ -18,7 +18,6 @@ export class BranchNode extends TextNode {
   }
 
   createDOM(config: EditorConfig): HTMLElement {
-    console.log('test')
     const element = super.createDOM(config);
     element.style.color = this.__color;
     return element;
@@ -35,10 +34,32 @@ export class BranchNode extends TextNode {
     }
     return isUpdated;
   }
+
+  static importJSON(serialisedNode: SerializedBranchNode): BranchNode {
+    const node = new BranchNode(serialisedNode.text, serialisedNode.color);
+    node.setFormat(serialisedNode.format);
+    node.setDetail(serialisedNode.detail);
+    node.setMode(serialisedNode.mode);
+    node.setStyle(serialisedNode.style);
+    return node;
+  }
+
+  exportJSON(): SerializedBranchNode {
+    return {
+      ...super.exportJSON(),
+      color: this.__color,
+      type: 'colored',
+    };
+  }
+}
+
+export interface SerializedBranchNode extends SerializedTextNode {
+  color: string;
+  type: 'colored';
 }
 
 export function $createBranchNode(text: string, color: string): BranchNode {
-  return new BranchNode(text, color);
+  return $applyNodeReplacement(new BranchNode(text, color));
 }
 
 export function $isBranchNode(node: any): boolean {

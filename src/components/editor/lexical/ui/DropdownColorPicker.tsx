@@ -16,6 +16,7 @@ type Props = {
   buttonAriaLabel?: string;
   buttonClassName: string;
   buttonIconClassName?: string;
+  buttonIcon?: React.ReactNode;
   buttonLabel?: string;
   title?: string;
   stopCloseOnClickSelf?: boolean;

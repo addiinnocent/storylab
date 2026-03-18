@@ -1,7 +1,6 @@
-import type {EditorState, LexicalEditor, LexicalCommand} from 'lexical';
-import {$getRoot, createCommand} from "lexical";
+import type {EditorState, LexicalEditor} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import React from "react";
+import React, { useRef } from "react";
 import { CAN_PUSH_COMMAND } from '../commands'
 
 const CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined';
@@ -17,11 +16,11 @@ export function OnChangeDebouncePlugin({
 }: {
   ignoreHistoryMergeTagChange?: boolean;
   ignoreSelectionChange?: boolean;
-  onChange: (editorState: EditorState, editor: LexicalEditor) => void;
+  onChange: (editor: LexicalEditor, editorState: EditorState) => void;
   debounce: number,
 }): null {
   const [editor] = useLexicalComposerContext();
-  let timerId:  NodeJS.Timeout | null = null;
+  const timerIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useLayoutEffect(() => {
     if (onChange) {
@@ -37,23 +36,18 @@ export function OnChangeDebouncePlugin({
             ) {
               return;
             }
-            if (timerId === null) {
-              timerId = setTimeout(() => {
-                editor.dispatchCommand(CAN_PUSH_COMMAND, true);
-                onChange(editor, editorState);
-              }, debounce);
-            } else {
-              clearTimeout(timerId);
-              timerId = setTimeout(() => {
-                editor.dispatchCommand(CAN_PUSH_COMMAND, true);
-                onChange(editor, editorState);
-              }, debounce);
+            if (timerIdRef.current !== null) {
+              clearTimeout(timerIdRef.current);
             }
+            timerIdRef.current = setTimeout(() => {
+              editor.dispatchCommand(CAN_PUSH_COMMAND, true);
+              onChange(editor, editorState);
+            }, debounce);
           }
         },
       );
     }
-  }, [editor, ignoreHistoryMergeTagChange, ignoreSelectionChange, onChange]);
+  }, [editor, ignoreHistoryMergeTagChange, ignoreSelectionChange, onChange, debounce]);
 
   return null;
 }

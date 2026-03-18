@@ -117,6 +117,33 @@ RUST_LOG=debug npm run tauri dev
 
 Full logging guide: **[docs/LOGGING.md](docs/LOGGING.md)**
 
+## Frontend (React + Lexical Editor)
+
+The React frontend uses **Lexical** (Facebook's text editor framework) with modern icon support.
+
+### Key Dependencies
+
+- **Lexical v0.41.0** → Rich text editor framework
+  - `@lexical/react`, `@lexical/list`, `@lexical/table`, `@lexical/link`, `@lexical/code`, etc.
+- **lucide-react** → SVG icon library for toolbar
+  - 1000+ icons, tree-shakeable, consistent styling
+
+### Toolbar Icons
+
+The editor toolbar uses lucide-react for all formatting icons:
+
+- Undo/Redo, text styles, alignment, colour pickers, etc.
+- See **[docs/LEXICAL_IMPLEMENTATION_GUIDE.md](docs/LEXICAL_IMPLEMENTATION_GUIDE.md)** for details.
+
+### Editor Component
+
+Main component: `src/components/editor/LexicalEditor.tsx`
+- Configures Lexical nodes and plugins
+- Handles content serialisation/deserialisation
+- Integrates with Fastify backend for saving
+
+See **[docs/LEXICAL_IMPLEMENTATION_GUIDE.md](docs/LEXICAL_IMPLEMENTATION_GUIDE.md)** for detailed architecture, plugin patterns, and customisation.
+
 ## Server (Fastify Sidecar)
 
 The Fastify server (`./server`) is a Node.js process spawned by Tauri on app startup. It provides HTTP APIs on port 3000.
