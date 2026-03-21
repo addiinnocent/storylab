@@ -65,7 +65,8 @@ storylab/
 │   ├── TESTING.md          # Testing guide
 │   ├── LOGGING.md          # Logging setup
 │   ├── SIDECAR.md          # Fastify server guide
-│   └── BUILDING.md         # Building & deployment
+│   ├── BUILDING.md         # Building & deployment
+│   └── EDITOR_TOOLBAR.md   # Editor toolbar features & implementation
 ├── CLAUDE.md               # This file
 └── package.json
 ```
@@ -102,6 +103,11 @@ Building for production, bundling, distribution, code signing, CI/CD, troublesho
 
 **Read this to:** Build a release, distribute the app, set up automated builds.
 
+### [docs/EDITOR_TOOLBAR.md](docs/EDITOR_TOOLBAR.md)
+Complete guide to the Lexical editor formatting toolbar — current features, implementation details, how to add new features.
+
+**Read this to:** Understand the editor toolbar, add formatting options (bold, italic, headings, quotes, code blocks), extend the editor UI.
+
 ## Logging
 
 Three-layer logging system:
@@ -128,12 +134,16 @@ The React frontend uses **Lexical** (Facebook's text editor framework) with mode
 - **lucide-react** → SVG icon library for toolbar
   - 1000+ icons, tree-shakeable, consistent styling
 
-### Toolbar Icons
+### Toolbar Features
 
-The editor toolbar uses lucide-react for all formatting icons:
+The editor toolbar provides essential formatting for book writing:
 
-- Undo/Redo, text styles, alignment, colour pickers, etc.
-- See **[docs/LEXICAL_IMPLEMENTATION_GUIDE.md](docs/LEXICAL_IMPLEMENTATION_GUIDE.md)** for details.
+- **Block type dropdown** — Switch between Normal, Heading 1–3, Quote, Code Block
+- **Text formatting** — Bold, Italic, Underline (all with active state indicators)
+- **Lists** — Bullet and numbered lists
+- **Alignment** — Left, centre, right alignment
+
+See **[docs/EDITOR_TOOLBAR.md](docs/EDITOR_TOOLBAR.md)** for complete toolbar documentation, how to add new features, and implementation details.
 
 ### Editor Component
 
@@ -142,7 +152,10 @@ Main component: `src/components/editor/LexicalEditor.tsx`
 - Handles content serialisation/deserialisation
 - Integrates with Fastify backend for saving
 
-See **[docs/LEXICAL_IMPLEMENTATION_GUIDE.md](docs/LEXICAL_IMPLEMENTATION_GUIDE.md)** for detailed architecture, plugin patterns, and customisation.
+Main toolbar component: `src/components/editor/FormattingToolbar.tsx`
+- Implements block type detection and conversion
+- Manages active state for bold/italic/underline
+- Uses DropDown UI component for block type selector
 
 ## Server (Fastify Sidecar)
 

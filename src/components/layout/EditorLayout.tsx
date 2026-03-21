@@ -21,8 +21,8 @@ export default function EditorLayout() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [isLoading, setIsLoading] = useState(true)
   const [loadedChapterId, setLoadedChapterId] = useState<string | null>(null)
+  const [wordCount, setWordCount] = useState(0)
 
-  const wordCount = content.split(/\s+/).filter(Boolean).length
   const activeChapter = chapters.find((c) => c.id === activeChapterId)
 
   // Load documents on mount
@@ -210,6 +210,7 @@ export default function EditorLayout() {
               console.log(`[EDITOR] Content changed: ${newContent.length} bytes`)
               setContent(newContent)
             }}
+            onWordCountChange={setWordCount}
           />
         )}
         <div style={{ padding: '8px 16px', fontSize: '12px', color: '#999', borderTop: '1px solid #e5e5e5' }}>

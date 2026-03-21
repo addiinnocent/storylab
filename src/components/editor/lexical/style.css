@@ -1743,11 +1743,13 @@ hr.selected {
 .word-counter {
   position: absolute;
   bottom: 0;
-  right: 10px;
+  left: 10px;
   padding-left: 2px;
   padding-right: 2px;
   background: rgba(254, 254, 254, 0.8);
   border-radius: 4px;
+  font-size: 12px;
+  color: #999;
 }
 
 .toolbar i {

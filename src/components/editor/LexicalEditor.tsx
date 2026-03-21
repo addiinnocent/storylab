@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './lexical/style.css';
 
 import type { EditorState } from 'lexical';
+import { $getRoot } from 'lexical';
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
@@ -53,12 +54,19 @@ const LexicalEditor: React.FC<LexicalEditorProps> = ({
     );
     console.log(`[LEXICAL] State: ${serialisedState.substring(0, 100)}`);
     if (onContentChange) {
-      console.log(`[LEXICAL] Calling onContentChange`);
-      onContentChange(serialisedState, wordCount);
+      // Calculate word count from current editor state
+      let textContent = '';
+      editorState.read(() => {
+        const root = $getRoot();
+        textContent = root.getTextContent();
+      });
+      const count = textContent.split(/\s+/).filter(Boolean).length;
+      console.log(`[LEXICAL] Calling onContentChange with word count: ${count}`);
+      onContentChange(serialisedState, count);
     }
   }
 
-  function WordCountPlugin(): React.ReactElement | null {
+  function WordCountPlugin(): null {
     const [editor] = useLexicalComposerContext();
 
     useEffect(() => {
@@ -69,11 +77,7 @@ const LexicalEditor: React.FC<LexicalEditorProps> = ({
       });
     }, [editor, language]);
 
-    return (
-      <div className="word-counter">
-        {wordCount.toLocaleString(language)} words
-      </div>
-    );
+    return null;
   }
 
 
