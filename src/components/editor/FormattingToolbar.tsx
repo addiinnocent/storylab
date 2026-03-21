@@ -4,7 +4,7 @@ import { FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, UNDO_COMMAND, REDO_COMMAND
 import { INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, $isListNode, ListNode } from '@lexical/list'
 import { $createCodeNode } from '@lexical/code'
 import { $createHeadingNode, $isHeadingNode, $createQuoteNode, HeadingTagType } from '@lexical/rich-text'
-import { $setBlocksType } from '@lexical/selection'
+import { $setBlocksType, $patchStyleText, $getSelectionStyleValueForProperty } from '@lexical/selection'
 import { $getNearestNodeOfType, $findMatchingParent } from '@lexical/utils'
 import { $isTableSelection } from '@lexical/table'
 import {
@@ -36,6 +36,7 @@ export default function FormattingToolbar() {
   const [isItalic, setIsItalic] = useState(false)
   const [isUnderline, setIsUnderline] = useState(false)
   const [blockType, setBlockType] = useState<BlockType>('paragraph')
+  const [fontSize, setFontSize] = useState('15px')
 
   const handleFormat = useCallback((command: string, arg?: string) => {
     editor.dispatchCommand(command as any, arg as any)
@@ -88,11 +89,22 @@ export default function FormattingToolbar() {
     }
   }, [editor, blockType])
 
+  const applyFontSize = useCallback((size: string) => {
+    editor.update(() => {
+      const selection = $getSelection()
+      if ($isRangeSelection(selection)) {
+        $patchStyleText(selection, { 'font-size': size })
+      }
+    })
+  }, [editor])
+
   const blockTypeLabels: Record<BlockType, string> = {
     paragraph: 'Normal', h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3',
     bullet: 'Bullet List', number: 'Numbered List', check: 'Check List',
     quote: 'Quote', code: 'Code Block',
   }
+
+  const FONT_SIZE_OPTIONS = ['10px', '11px', '12px', '13px', '14px', '15px', '16px', '17px', '18px', '20px', '24px', '28px', '32px']
 
   const BlockIcon = ({ type }: { type: BlockType }) => {
     if (type === 'h1') return <Heading1 size={16} />
@@ -129,6 +141,8 @@ export default function FormattingToolbar() {
             const type = $isHeadingNode(element) ? element.getTag() : element.getType()
             setBlockType(type as BlockType)
           }
+
+          setFontSize($getSelectionStyleValueForProperty(selection, 'font-size', '15px'))
         }
       })
     })
@@ -176,6 +190,22 @@ export default function FormattingToolbar() {
         <DropDownItem className={`item ${blockType === 'code' ? 'active' : ''}`} onClick={formatCode}>
           <Code size={16} /><span className="text">Code Block</span>
         </DropDownItem>
+      </DropDown>
+
+      <DropDown
+        buttonLabel={fontSize}
+        buttonClassName="format-btn format-btn-fontsize"
+        buttonAriaLabel="Font size"
+      >
+        {FONT_SIZE_OPTIONS.map((size) => (
+          <DropDownItem
+            key={size}
+            className={`item ${fontSize === size ? 'active' : ''}`}
+            onClick={() => applyFontSize(size)}
+          >
+            <span className="text">{size}</span>
+          </DropDownItem>
+        ))}
       </DropDown>
 
       <div className="separator" />

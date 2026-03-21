@@ -53,6 +53,14 @@
   justify-content: flex-start;
 }
 
+.format-btn-fontsize {
+  width: auto;
+  padding: 0 10px;
+  font-size: 13px;
+  min-width: 70px;
+  justify-content: flex-start;
+}
+
 .item {
   display: flex;
   align-items: center;
@@ -80,4 +88,38 @@
   height: 24px;
   background: #d0d0d0;
   margin: 0 4px;
+}
+
+/* Override lexical dropdown styles for FormattingToolbar dropdowns */
+.dropdown {
+  z-index: 9999 !important;
+  position: fixed !important;
+  min-height: auto !important;
+  padding: 4px 0;
+}
+
+/* Fix button overflow and styling for our dropdown items */
+.dropdown button.item {
+  max-width: none !important;
+  min-width: auto !important;
+  width: auto !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  padding: 6px 10px !important;
+  margin: 0 4px !important;
+  font-size: 13px !important;
+  border-radius: 4px !important;
+  background-color: transparent !important;
+  border: none !important;
+  color: #333 !important;
+  line-height: 1.4 !important;
+}
+
+.dropdown button.item:hover {
+  background-color: #f0f0f0 !important;
+}
+
+.dropdown button.item.active {
+  color: #0066cc !important;
+  font-weight: 500 !important;
 }
