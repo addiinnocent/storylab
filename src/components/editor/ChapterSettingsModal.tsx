@@ -15,6 +15,8 @@ interface ChapterSettingsModalProps {
   onChange: (background: string) => void
   chapterName: string
   onNameChange: (name: string) => void
+  initialShowDragMenu?: boolean
+  onShowDragMenuChange?: (show: boolean) => void
 }
 
 export default function ChapterSettingsModal({
@@ -22,9 +24,12 @@ export default function ChapterSettingsModal({
   onChange,
   chapterName,
   onNameChange,
+  initialShowDragMenu = true,
+  onShowDragMenuChange,
 }: ChapterSettingsModalProps) {
   const [background, setBackground] = useState(initialBackground)
   const [name, setName] = useState(chapterName)
+  const [showDragMenu, setShowDragMenu] = useState(initialShowDragMenu)
 
   useEffect(() => {
     setBackground(initialBackground)
@@ -88,6 +93,22 @@ export default function ChapterSettingsModal({
           />
           <span className="colour-value">{background}</span>
         </div>
+      </div>
+
+      <div className="settings-section">
+        <label className="settings-label">Editor Options</label>
+        <label className="settings-checkbox-label">
+          <input
+            type="checkbox"
+            checked={showDragMenu}
+            onChange={(e) => {
+              setShowDragMenu(e.target.checked)
+              onShowDragMenuChange?.(e.target.checked)
+            }}
+            className="settings-checkbox"
+          />
+          <span className="settings-checkbox-text">Show drag menu button</span>
+        </label>
       </div>
     </div>
   )

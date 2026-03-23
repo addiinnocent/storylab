@@ -20,6 +20,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 interface ChapterSettings {
   pageBackground: string
+  showDragMenu?: boolean
 }
 
 export default function EditorLayout() {
@@ -236,6 +237,15 @@ export default function EditorLayout() {
     console.log(`[SETTINGS] Updated chapter "${activeChapterId}" ${key} to ${value}`)
   }
 
+  const handleShowDragMenuChange = (show: boolean) => {
+    if (!activeChapterId) return
+
+    const updated = { ...(chapterSettings[activeChapterId] ?? { pageBackground: '#f9f9f9' }), showDragMenu: show }
+    setChapterSettings(prev => ({ ...prev, [activeChapterId]: updated }))
+    localStorage.setItem(`chapter-settings-${activeChapterId}`, JSON.stringify(updated))
+    console.log(`[SETTINGS] Updated chapter "${activeChapterId}" showDragMenu to ${show}`)
+  }
+
   const handleReorder = async (reorderedChapters: DocumentHead[]) => {
     console.log('[REORDER] Reordering chapters...')
     // Optimistic update with updated order indices
@@ -295,6 +305,7 @@ export default function EditorLayout() {
             chapterId={activeChapterId}
             content={content}
             pageBackground={chapterSettings[activeChapterId]?.pageBackground ?? '#f9f9f9'}
+            showDragMenu={chapterSettings[activeChapterId]?.showDragMenu ?? true}
             onChange={(newContent) => {
               console.log(`[EDITOR] Content changed: ${newContent.length} bytes`)
               setContent(newContent)
@@ -332,6 +343,8 @@ export default function EditorLayout() {
             }}
             initialBackground={chapterSettings[activeChapterId]?.pageBackground ?? '#f9f9f9'}
             onChange={(bg) => handleSettingsChange('pageBackground', bg)}
+            initialShowDragMenu={chapterSettings[activeChapterId]?.showDragMenu ?? true}
+            onShowDragMenuChange={handleShowDragMenuChange}
           />
         )}
       </GenericModal>

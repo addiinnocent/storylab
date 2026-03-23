@@ -9,9 +9,10 @@ interface EditorAreaProps {
   onChange: (content: string) => void
   onWordCountChange?: (wordCount: number) => void
   pageBackground?: string
+  showDragMenu?: boolean
 }
 
-export default function EditorArea({ chapterId, content, onChange, onWordCountChange, pageBackground }: EditorAreaProps) {
+export default function EditorArea({ chapterId, content, onChange, onWordCountChange, pageBackground, showDragMenu = true }: EditorAreaProps) {
   // Initialize word count when content loads
   useEffect(() => {
     if (content && onWordCountChange) {
@@ -43,6 +44,7 @@ export default function EditorArea({ chapterId, content, onChange, onWordCountCh
           chapterId={chapterId}
           initialContent={content}
           onContentChange={handleContentChange}
+          showDragMenu={showDragMenu}
         />
       </div>
     </EditorErrorBoundary>

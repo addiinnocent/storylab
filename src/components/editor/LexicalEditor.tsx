@@ -28,6 +28,7 @@ import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin
 
 import AutoLinkPlugin from './lexical/plugins/AutoLinkPlugin';
 import TreeViewPlugin from './lexical/plugins/TreeViewPlugin';
+import DragDropBlockPlugin from './lexical/plugins/DragDropBlockPlugin';
 import FormattingToolbar from './FormattingToolbar';
 
 import PlaygroundEditorTheme from './lexical/themes/PlaygroundEditorTheme';
@@ -37,6 +38,7 @@ interface LexicalEditorProps {
   initialContent?: string;
   language?: string;
   onContentChange?: (serialisedState: string, wordCount: number) => void;
+  showDragMenu?: boolean;
 }
 
 const LexicalEditor: React.FC<LexicalEditorProps> = ({
@@ -44,6 +46,7 @@ const LexicalEditor: React.FC<LexicalEditorProps> = ({
   initialContent,
   language = 'en',
   onContentChange,
+  showDragMenu = true,
 }) => {
   const [wordCount, setWordCount] = useState<number>(0);
   const theme = PlaygroundEditorTheme;
@@ -122,7 +125,7 @@ const LexicalEditor: React.FC<LexicalEditorProps> = ({
       }}
     >
       <FormattingToolbar />
-      <div className="editor-container">
+      <div className="editor-container" style={{ position: 'relative' }}>
         <RichTextPlugin
           contentEditable={<ContentEditable className="editor-input" />}
           placeholder={<Placeholder />}
@@ -138,6 +141,7 @@ const LexicalEditor: React.FC<LexicalEditorProps> = ({
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <HorizontalRulePlugin />
         <TreeViewPlugin />
+        <DragDropBlockPlugin showDragMenu={showDragMenu} />
       </div>
       <WordCountPlugin />
     </LexicalComposer>
