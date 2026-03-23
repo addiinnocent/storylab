@@ -191,7 +191,9 @@ export default function DragDropBlockPlugin({
               }}
               onMouseEnter={() => {
                 setHoveredBlockKey(dims.blockKey)
-                setDropIndicatorPos({ top: dims.top })
+                if (activeDragKey) {
+                  setDropIndicatorPos({ top: dims.top })
+                }
               }}
               onMouseLeave={() => {
                 setHoveredBlockKey(null)
